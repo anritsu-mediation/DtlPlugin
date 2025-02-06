@@ -1,0 +1,22 @@
+var global = 1;
+
+var getActivities(final var param1) {
+
+    var local =  <info descr="null">param1</info>;
+    var rules = <info descr="null">global</info>;
+    var rules2 = <error descr="Cannot resolve symbol: glo">glo</error>;
+
+    var rules2 = <info descr="null">local</info>;
+
+    for(; <info descr="null">local</info> < 10; <info descr="null">local</info>++) {
+        var intoFor = 1;
+        var intoFor2 = 1;
+
+        var test = <info descr="null">intoFor</info>;
+        var test = <error descr="Cannot resolve symbol: into">into</error>;
+    }
+
+
+    <error descr="Cannot resolve symbol: intoFor2">intoFor2</error> = 0;
+
+}

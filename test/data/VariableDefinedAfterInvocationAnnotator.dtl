@@ -1,0 +1,6 @@
+var m1(final var param1) {
+
+    var i = <error descr="Cannot resolve symbol: services">services</error>;
+    var services;
+}
+

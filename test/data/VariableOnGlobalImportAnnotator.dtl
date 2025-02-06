@@ -1,0 +1,10 @@
+import var g;
+import var suka(final var pippo);
+
+var m1() {
+
+    var local =  <info descr="null">g</info>;
+    var local =  <error descr="Cannot resolve symbol: suka">suka</error>;
+    var local =  <error descr="Cannot resolve symbol: pippo">pippo</error>;
+    var rules2 = <info descr="null">local</info>;
+}

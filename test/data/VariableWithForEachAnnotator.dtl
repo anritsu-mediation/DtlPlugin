@@ -1,0 +1,8 @@
+var m1(final var param1) {
+
+    var services;
+    for (final var service : <info descr="null">services</info>) {
+        var i = <info descr="null">service</info>;
+    }
+}
+

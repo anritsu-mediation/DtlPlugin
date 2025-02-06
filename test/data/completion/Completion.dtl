@@ -1,0 +1,6 @@
+import var inputGetField(var param1);
+import var inputGetField(var param1, var param2);
+
+var test() {
+    var i = inputGetFiel<caret>d("");
+}

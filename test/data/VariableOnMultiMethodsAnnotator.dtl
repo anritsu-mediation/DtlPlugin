@@ -1,0 +1,13 @@
+var m1(final var param1) {
+
+    var local =  <info descr="null">param1</info>;
+    var rules2 = <info descr="null">local</info>;
+
+}
+
+var m2(final var param1) {
+
+    var local =  <info descr="null">param1</info>;
+    var rules2 = <info descr="null">local</info>;
+
+}

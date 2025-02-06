@@ -1,0 +1,12 @@
+var getActivities() {
+
+    // check annotation on native methods
+    var rules = <info descr="null">inputGetField</info>("test", "t2");
+   var rules = <error descr="Cannot resolve method: notDeclaredMethod">notDeclaredMethod</error>();
+
+    var rules2 = <info descr="null">lookupForErrorInfo</info>("test", "t2");
+    var rules2 = <error descr="Cannot resolve method: lookupForErrorInf">lookupForErrorInf</error>();
+
+
+
+}

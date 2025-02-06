@@ -1,0 +1,141 @@
+<idea-plugin>
+    <id>com.anritsu.mediation.plugin.dtl</id>
+    <name>Dtl</name>
+    <version>2.1.9</version>
+    <vendor email="anritsu.mediation@gmail.com" url="http://www.anritsu.com">Anritsu S.p.A.</vendor>
+
+    <depends>com.intellij.java</depends>
+    <depends>com.intellij.modules.platform</depends>
+
+    <description><![CDATA[
+      This plugin supports Anritsu DTL script. The following features are supported:
+      <ul>
+        <li>Dedicated file types.</li>
+        <li>Syntax and error highlighting.</li>
+        <li>Commenter</li>
+        <li>Native and included methods and variables</li>
+        <li>Native methods and variable completion</li>
+        <li>Brace matcher and code block folding</li>
+      </ul>
+
+      Documentation (accessible via Anritsu VPN only):
+      <ul>
+        <li>
+            <a href="https://anritsuglobal.sharepoint.com/:w:/r/sites/EU-0017/_layouts/15/Doc.aspx?sourcedoc=%7B4EBCA761-70B4-4C10-BE15-18640A6444E2%7D&file=DTL-sds.doc&action=default&mobileredirect=true">Complete DTL Syntax</a>
+        </li>
+        <li>
+            <a href="https://anritsuglobal.sharepoint.com/sites/EU-0017/Product%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server%2FDtlApi%20%2DeoDRFormat%2Ehtml&parent=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server">Native API</a>
+        </li>
+        <li>
+            <a href="https://anritsuglobal.sharepoint.com/sites/EU-0017/Product%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server%2FDtlApi%2D3rdParty%2Ehtml&parent=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server">Third party API</a>
+        </li>
+        <li>
+            <a href="https://anritsuglobal.sharepoint.com/sites/EU-0017/Product%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server%2FDtlApi%2DEnrichment%2Ehtml&parent=%2Fsites%2FEU%2D0017%2FProduct%20Documents%2FeoXDR%20Server">Enrichment API</a>
+        </li>
+      </ul>
+      <br/>
+      <b>This plugin can and should be used by Anritsu employees only.</b>
+    ]]></description>
+
+    <change-notes><![CDATA[
+       <ul> 2.1.9:
+        <li>Added/update native method operatorHome and some fix </li>
+      </ul>
+       <ul> 2.1.8:
+        <li>Added/update native method InstallSimpleEnrichedField,InstallCompositeEnrichedField </li>
+      </ul>
+      <ul> 2.1.7:
+        <li>Added CipherInit, encrypt and decrypt native method recognition</li>
+      </ul>
+      <ul> 2.1.6:
+        <li>Parse of dtl files outside eoxdr-config made the program crash, better highlighting and some minor fixes</li>
+      </ul>
+      <ul> 2.0:
+        <li>Complete refactor for performance and functionalities</li>
+      </ul>
+      <ul> 1.1:
+        <li>Added dedicated icons for methods and fields</li>
+      </ul>
+      <ul> 1.0:
+        <li> Initial version</li>
+      </ul>
+    ]]>
+    </change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="212.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Dtl file" implementationClass="com.anritsu.intellij.plugin.dtl.DtlFileType" fieldName="INSTANCE"
+                  language="Dtl" extensions="dtl"/>
+        <lang.parserDefinition language="Dtl"
+                               implementationClass="com.anritsu.intellij.plugin.dtl.parser.DtlParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory language="Dtl"
+                                       implementationClass="com.anritsu.intellij.plugin.dtl.highlighter.SimpleSyntaxHighlighterFactory"/>
+        <lang.commenter language="Dtl" implementationClass="com.anritsu.intellij.plugin.dtl.commenter.DtlCommenter"/>
+        <annotator implementationClass="com.anritsu.intellij.plugin.dtl.annotator.IncludeAnnotator" language="Dtl"/>
+        <annotator id="methodAnnotator" order="first"
+                   implementationClass="com.anritsu.intellij.plugin.dtl.annotator.MethodAnnotator" language="Dtl"/>
+        <annotator implementationClass="com.anritsu.intellij.plugin.dtl.annotator.VariableAnnotator" language="Dtl"/>
+        <!--        <psi.referenceContributor id="DtlReferenceContributor" language="Dtl"-->
+        <!--                                  implementation="com.anritsu.intellij.plugin.dtl.reference.DtlReferenceContributor"/>-->
+
+        <!--        <lang.refactoringSupport language="Dtl"-->
+        <!--                                 implementationClass="com.anritsu.intellij.plugin.dtl.reference.DtlRefactoringSupportProvider"/>-->
+
+
+        <completion.contributor language="Dtl"
+                                implementationClass="com.anritsu.intellij.plugin.dtl.completion.DtlMethodCompletionContributor"/>
+        <!--        <lang.findUsagesProvider language="Dtl"-->
+        <!--                                 implementationClass="com.anritsu.intellij.plugin.dtl.reference.DtlFindUsagesProvider"/>-->
+        <!--        <lang.psiStructureViewFactory language="Dtl"-->
+        <!--                                      implementationClass="com.anritsu.intellij.plugin.dtl.structure.DtlStructureViewFactory"/>-->
+        <lang.foldingBuilder language="Dtl"
+                             implementationClass="com.anritsu.intellij.plugin.dtl.folding.DtlFoldingBuilder"/>
+
+        <lang.braceMatcher language="Dtl"
+                           implementationClass="com.anritsu.intellij.plugin.dtl.folding.DtlBraceMatcher"/>
+
+        <defaultLiveTemplates file="/liveTemplates/DTLTemplates.xml"/>
+        <liveTemplateContext implementation="com.anritsu.intellij.plugin.dtl.templates.DTLImportContext" contextId="DTL"/>
+        <liveTemplateMacro implementation="com.anritsu.intellij.plugin.dtl.templates.chooseNativeMethodMacro"/>
+        <liveTemplateMacro implementation="com.anritsu.intellij.plugin.dtl.templates.chooseNativeVariableMacro"/>
+    </extensions>
+
+    <actions>
+        <action id="com.anritsu.intellij.plugin.dtl.action.OpenSyntaxDocumentationAction"
+                class="com.anritsu.intellij.plugin.dtl.action.OpenSyntaxDocumentationAction"
+                text="Open DTL Syntax Documentation"
+                description="Opens DTL Syntax Documentation SDS page in Sharepoint, on your default browser.">
+            <add-to-group group-id="ViewMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt H"/>
+        </action>
+        <action id="com.anritsu.intellij.plugin.dtl.action.OpenNativeAPIDocumentationAction"
+                class="com.anritsu.intellij.plugin.dtl.action.OpenNativeAPIDocumentationAction"
+                text="Open DTL Native API Documentation"
+                description="Opens DTL Native API Documentation page in Sharepoint, on your default browser.">
+            <add-to-group group-id="ViewMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt N"/>
+        </action>
+        <action id="com.anritsu.intellij.plugin.dtl.action.OpenThirdPartyAPIDocumentationAction"
+                class="com.anritsu.intellij.plugin.dtl.action.OpenThirdPartyAPIDocumentationAction"
+                text="Open DTL Third Party API Documentation"
+                description="Opens DTL Third Party API Documentation page in Sharepoint, on your default browser.">
+            <add-to-group group-id="ViewMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt T"/>
+        </action>
+        <action id="com.anritsu.intellij.plugin.dtl.action.OpenEnrichmentAPIDocumentationAction"
+                class="com.anritsu.intellij.plugin.dtl.action.OpenEnrichmentAPIDocumentationAction"
+                text="Open DTL Enrichment API Documentation"
+                description="Opens DTL Enrichemnt API Documentation page in Sharepoint, on your default browser.">
+            <add-to-group group-id="ViewMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E"/>
+        </action>
+    </actions>
+
+
+</idea-plugin>

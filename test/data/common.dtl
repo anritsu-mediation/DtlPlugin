@@ -1,0 +1,3 @@
+import var inputGetField(var fieldId);
+
+var lookupForErrorInfo(var errCauseType, var errCauseCode){}

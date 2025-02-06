@@ -1,0 +1,343 @@
+{
+  parserClass="com.anritsu.intellij.plugin.dtl.parser.DtlParser"
+
+  extends="com.anritsu.intellij.plugin.dtl.parser.psi.DtlASTWrapperPsiElement"
+
+  psiClassPrefix="Dtl"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.anritsu.intellij.plugin.dtl.parser.psi"
+  psiImplPackage="com.anritsu.intellij.plugin.dtl.parser.psi.impl"
+
+  elementTypeHolderClass="com.anritsu.intellij.plugin.dtl.parser.psi.DtlTypes"
+  elementTypeClass="com.anritsu.intellij.plugin.dtl.parser.psi.DtlElementType"
+  tokenTypeClass="com.anritsu.intellij.plugin.dtl.parser.psi.DtlTokenType"
+
+  psiImplUtilClass="com.anritsu.intellij.plugin.dtl.parser.psi.DtlPsiImplUtil"
+}
+
+/*------------------------------------------------------------------
+ * PARSER RULES
+ *------------------------------------------------------------------*/
+
+program
+	::=	(importdirective|includedirective)* (programcompound|includedirective)*
+
+programcompound
+	::=	usermethod
+	|	variabledecl_statement
+	;
+
+varclass
+	::=	(DTL_TOKEN_FINAL) ?
+	;
+
+importdirective
+	::= importmethoddirective
+	| importvardirective
+	;
+
+includedirective ::= DTL_TOKEN_INCLUDE filename {methods=[getIncludedFilename]};
+
+filename ::= STRING;
+
+importmethoddirective ::= DTL_TOKEN_IMPORT variable_identifier (DTL_TOKEN_OPAR (importvars)? DTL_TOKEN_CPAR ) DTL_TOKEN_SEMICOL+
+    {
+           methods=[getNativeMethod]
+          }
+    ;
+
+importvardirective ::= DTL_TOKEN_IMPORT variable_identifier DTL_TOKEN_SEMICOL+ {methods=[getNativeVariable]};
+
+
+importvars
+	::=	importvar (DTL_TOKEN_COMA importvar )*
+	;
+
+importvar
+	::=	variable_identifier {methods=[getIdentifierName]}
+	;
+
+variabledecl
+	::=	ID DTL_TOKEN_ASSIGN expression
+	|	ID
+	{methods=[getVarName]}
+	;
+
+variabledeclsline
+	::=	variabledecl
+		(DTL_TOKEN_COMA variabledecl )*
+	;
+
+usermethod
+	::=	variable_identifier DTL_TOKEN_OPAR (importvars )? DTL_TOKEN_CPAR DTL_TOKEN_OBRA (startingstatement|DTL_TOKEN_SEMICOL)* DTL_TOKEN_CBRA {methods=[getUserDefinedMethod]}
+	;
+
+startingstatement
+	::=	expression_statement
+	|	selection_statement
+	|	iteration_statement
+	|	jump_statement
+	|	labeled_statement
+	|	variabledecl_statement
+	|	other_native_statement
+	;
+
+other_native_statement
+	::=	DTL_TOKEN_ASSERT DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR DTL_TOKEN_SEMICOL+
+	|	DTL_TOKEN_TRACE DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR DTL_TOKEN_SEMICOL+
+	;
+
+variabledecl_statement
+	::=	varclass DTL_TOKEN_VAR variabledeclsline DTL_TOKEN_SEMICOL+
+	;
+
+jump_statement
+	::=	DTL_TOKEN_RETURN expression DTL_TOKEN_SEMICOL+
+	|	DTL_TOKEN_BREAK DTL_TOKEN_SEMICOL+
+	|	DTL_TOKEN_CONTINUE DTL_TOKEN_SEMICOL+
+	;
+
+iteration_statement
+	::=	DTL_TOKEN_WHILE DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR codeblockorsingle
+	|	DTL_TOKEN_FOR DTL_TOKEN_OPAR (startingstatement|DTL_TOKEN_SEMICOL) (startingstatement|DTL_TOKEN_SEMICOL) expression? DTL_TOKEN_CPAR codeblockorsingle
+	|	DTL_TOKEN_FOR DTL_TOKEN_OPAR variable_identifier DTL_TOKEN_COLON expression DTL_TOKEN_CPAR codeblockorsingle
+	;
+
+variable_identifier ::= (varclass DTL_TOKEN_VAR ID) {
+           methods=[getIdentifierName]};
+
+ID ::= IDENTIFIER
+{
+ mixin="com.anritsu.intellij.plugin.dtl.reference.DtlNamedElementImpl"
+           implements="com.anritsu.intellij.plugin.dtl.reference.DtlNamedElement"
+           methods=[getIdentifierName getName setName getNameIdentifier]}
+
+
+
+
+selection_statement
+	::=	DTL_TOKEN_IF DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR codeblockorsingle (DTL_TOKEN_ELSE codeblockorsingle)?
+	|	DTL_TOKEN_SWITCH DTL_TOKEN_OPAR expression  DTL_TOKEN_CPAR codeblockorsingle
+	;
+
+codeblockorsingle
+	::=	DTL_TOKEN_OBRA (startingstatement )* DTL_TOKEN_CBRA
+	|	startingstatement
+	;
+
+labeled_statement
+	::=	DTL_TOKEN_CASE constantvalue DTL_TOKEN_COLON
+	|	DTL_TOKEN_DEFAULT DTL_TOKEN_COLON
+	;
+
+expression_statement
+	::=	expression  DTL_TOKEN_SEMICOL+ {pin=1}
+	;
+
+expression_terminal
+	::=	DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+	|	methodinvocation
+	|	IDENTIFIER DTL_TOKEN_ASSIGN expression
+	|	DTL_TOKEN_MULT IDENTIFIER DTL_TOKEN_ASSIGN expression
+	|	DTL_TOKEN_DEC IDENTIFIER
+	|	DTL_TOKEN_INC IDENTIFIER
+	|	IDENTIFIER DTL_TOKEN_DEC
+	|	IDENTIFIER DTL_TOKEN_INC
+	|	IDENTIFIER DTL_TOKEN_OSQUARE expression DTL_TOKEN_CSQUARE  ( DTL_TOKEN_ASSIGN expression )?
+	|	IDENTIFIER
+		(
+		 DTL_TOKEN_PLUSEQ expression
+		|DTL_TOKEN_MINUSEQ expression
+		|DTL_TOKEN_BITOREQ expression
+		|DTL_TOKEN_BITANDEQ expression
+		|DTL_TOKEN_BITXOREQ expression
+		|DTL_TOKEN_BITSHIFTLEFTEQ expression
+		|DTL_TOKEN_BITSHIFTRIGHTEQ expression
+		)?
+	|	constantvalue
+
+    {methods=[getIdentifierName]}
+	;
+
+methodinvocation ::=
+    IDENTIFIER DTL_TOKEN_OPAR expressionlist? DTL_TOKEN_CPAR {methods=[getUserMethodInvocation]}
+    ;
+
+expression_operand
+	::=	expression_terminal
+	(
+	    (
+	        '.'
+            (
+                DTL_TOKEN_PUT DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ERASE DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_SORT DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_REMOVE DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_SIZE DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_KEYS DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_VALUES DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ENTRIES DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISNULL DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISINTEGER DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISDOUBLE DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISSTRING DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISBYTES DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISLIST DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISSET DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ISMAP DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOINTEGER DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TODOUBLE DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOSTRING DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOBYTES DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOLIST DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOSET DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOMAP DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_CLONE DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_CONTAINS DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_FIND  DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_SPLIT DTL_TOKEN_OPAR STRING DTL_TOKEN_COMA constantvalue DTL_TOKEN_CPAR
+                |	DTL_TOKEN_MATCH DTL_TOKEN_OPAR STRING DTL_TOKEN_COMA constantvalue DTL_TOKEN_COMA expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOUPPER DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_TOLOWER DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+                |	DTL_TOKEN_BEGINSWITH DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_ENDSWITH DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_RFIND DTL_TOKEN_OPAR expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_SUBSTRING DTL_TOKEN_OPAR expression DTL_TOKEN_COMA expression DTL_TOKEN_CPAR
+                |	DTL_TOKEN_PARSEINT DTL_TOKEN_OPAR constantvalue  DTL_TOKEN_CPAR
+                |	DTL_TOKEN_FORMATINT DTL_TOKEN_OPAR constantvalue  DTL_TOKEN_CPAR
+                |	expression
+            )
+        )
+        |
+        (
+            DTL_TOKEN_OSQUARE expression DTL_TOKEN_CSQUARE
+        )
+	)*
+	;
+
+
+unary_expression
+	::=	expression_operand
+	|	DTL_TOKEN_LOGICAL_NOT unary_expression
+	|	DTL_TOKEN_BITWISE_NOT unary_expression
+	|	DTL_TOKEN_PLUS unary_expression
+	|	DTL_TOKEN_MINUS unary_expression
+	;
+
+logical_or_expression
+	::=	logical_and_expression  (DTL_TOKEN_LOGICAL_OR logical_and_expression  )*
+	;
+
+logical_and_expression
+	::=	inclusive_or_expression (DTL_TOKEN_LOGICAL_AND inclusive_or_expression )*
+	;
+
+inclusive_or_expression
+	::=	exclusive_or_expression  (DTL_TOKEN_BITWISE_OR exclusive_or_expression )*
+	;
+
+exclusive_or_expression
+	::=	and_expression  (DTL_TOKEN_BITWISE_XOR and_expression )*
+	;
+
+and_expression
+	::=	equality_expression (DTL_TOKEN_BITWISE_AND equality_expression )*
+	;
+
+equality_expression
+	::=	relational_expression
+	(	DTL_TOKEN_COMPARE_EQUAL relational_expression
+	|	DTL_TOKEN_COMPARE_NOTEQUAL relational_expression
+	)*
+	;
+
+relational_expression
+	::=	shift_expression
+	(	DTL_TOKEN_COMPARE_LESS shift_expression
+	|	DTL_TOKEN_COMPARE_GREATER shift_expression
+	|	DTL_TOKEN_COMPARE_LESSEQUAL shift_expression
+	|	DTL_TOKEN_COMPARE_GREATEREQUAL shift_expression
+	)*
+	;
+
+shift_expression
+	::=	additive_expression
+	(	DTL_TOKEN_BITWISE_SHIFTLEFT additive_expression
+	|	DTL_TOKEN_BITWISE_SHIFTRIGHT additive_expression
+	)*
+	;
+
+additive_expression
+	::=	multiplicative_expression
+	(	DTL_TOKEN_PLUS multiplicative_expression
+	|	DTL_TOKEN_MINUS multiplicative_expression
+	)*
+	;
+
+multiplicative_expression
+	::=	unary_expression
+	(	DTL_TOKEN_MULT unary_expression
+	|	DTL_TOKEN_DIV unary_expression
+	|	DTL_TOKEN_MOD unary_expression
+	)*
+	;
+
+nulldefaultop_expression
+	::=	logical_or_expression
+	(DTL_TOKEN_NULLDEFAULTOP logical_or_expression )*
+	;
+
+conditional_expression
+	::=	nulldefaultop_expression
+	('?' expression DTL_TOKEN_COLON conditional_expression )*
+	;
+
+expression
+	::=	conditional_expression
+	;
+
+expressionlist
+	::=	expression (DTL_TOKEN_COMA expression  )*
+	;
+
+constantvalue
+	::=	DTL_TOKEN_NULLVALUE
+	| 	DTL_TOKEN_TRUE
+	| 	DTL_TOKEN_FALSE
+	| 	number
+	|	STRING
+	|   SINGLE_QUOTED_STRING
+	| 	bytearray
+	|	DOUBLENUMBER
+	| 	DTL_TOKEN_SET DTL_TOKEN_OPAR constantvalue_list* DTL_TOKEN_CPAR
+	|	DTL_TOKEN_OBRA constantmapvaluepair_list DTL_TOKEN_CBRA
+	|	DTL_TOKEN_OBRA constantvalue_list DTL_TOKEN_CBRA
+	|	DTL_TOKEN_MAP DTL_TOKEN_OPAR constantmapvaluepair_list* DTL_TOKEN_CPAR
+	|	DTL_TOKEN_LIST DTL_TOKEN_OPAR constantvalue_list* DTL_TOKEN_CPAR
+	;
+
+constantmapvaluepair
+	::=	constantvalue DTL_TOKEN_COLON constantvalue
+	;
+
+constantmapvaluepair_list
+	::=	constantmapvaluepair  (DTL_TOKEN_COMA constantmapvaluepair  )*
+	;
+
+constantvalue_list
+	::=	constantvalue (DTL_TOKEN_COMA constantvalue )*
+	;
+
+number
+	::=	INTEGERNUMBER
+	|	HEXNUMBER
+	;
+
+bytearray
+	::=	BYTEARR
+	|	DTL_TOKEN_BYTES DTL_TOKEN_OPAR DTL_TOKEN_CPAR
+	;
+
+//noinspection BnfUnusedRule
+ignore
+   ::= END_OF_LINE_COMMENT | C_STYLE_COMMENT | WS | DTL_TOKEN_ELSE | DTL_TOKEN_DOT;

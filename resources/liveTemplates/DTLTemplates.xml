@@ -1,0 +1,16 @@
+<templateSet group="DTLTemplates">
+    <template name="importNativeMethod" value="import $NATIVE_METHOD$"
+              description="Imports a native method">
+        <variable name="NATIVE_METHOD" expression="chooseNativeMethod()" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="IMPORT" value="true"/>
+        </context>
+    </template>
+    <template name="importNativeVariable" value="import $NATIVE_VARIABLE$"
+              description="Imports a native variable">
+        <variable name="NATIVE_VARIABLE" expression="chooseNativeVariable()" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="IMPORT" value="true"/>
+        </context>
+    </template>
+</templateSet>

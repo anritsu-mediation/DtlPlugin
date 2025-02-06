@@ -1,0 +1,5 @@
+import var inputGetField(var fieldId);
+
+var test() {
+    var i = inputGetFiel<caret>d("");
+}
